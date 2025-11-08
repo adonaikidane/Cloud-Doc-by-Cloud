@@ -1,4 +1,4 @@
-# ClauseCloud ☁️
+# Cloud Doc by Cloud ☁️
 
 > AI-powered contract intelligence platform that analyzes, compares, and recommends contracts in seconds
 

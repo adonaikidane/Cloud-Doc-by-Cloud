@@ -1,6 +1,9 @@
 // services/claudeService.js
 // Service for interacting with Anthropic Claude API
 
+import dotenv from 'dotenv'
+dotenv.config()
+
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({
@@ -71,11 +74,24 @@ CRITICAL: Return ONLY valid JSON, no other text.`
       ],
     })
 
-    const responseText = message.content[0].text
+const responseText = message.content[0].text
 
-    // Parse JSON response
-    const analysis = JSON.parse(responseText)
-    return analysis
+// Strip markdown code blocks if present
+let cleanedResponse = responseText.trim()
+if (cleanedResponse.startsWith('```json')) {
+  cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?$/g, '').trim()
+} else if (cleanedResponse.startsWith('```')) {
+  cleanedResponse = cleanedResponse.replace(/```\n?/g, '').trim()
+}
+
+// Parse JSON response
+try {
+  const analysis = JSON.parse(cleanedResponse)
+  return analysis
+} catch (parseError) {
+  console.error('Failed to parse Claude response:', cleanedResponse.substring(0, 500))
+  throw new Error('Failed to parse analysis: ' + parseError.message)
+}
   } catch (error) {
     console.error('Error calling Claude API:', error)
     throw new Error('Failed to analyze contract with Claude')

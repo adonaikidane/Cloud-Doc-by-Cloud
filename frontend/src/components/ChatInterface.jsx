@@ -5,6 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, Loader } from 'lucide-react'
+import { sendChatMessage } from '../services/api'
 
 const ChatInterface = ({ contractId, initialMessages = [] }) => {
   const [messages, setMessages] = useState(initialMessages)
@@ -31,22 +32,39 @@ const ChatInterface = ({ contractId, initialMessages = [] }) => {
     setIsLoading(true)
 
     try {
-      // TODO: API call to send message and get response
-      // const response = await sendChatMessage(contractId, inputValue)
+      if (!contractId) {
+        throw new Error('No contract loaded. Please upload a contract first.')
+      }
+
+      // Real API call
+      const response = await sendChatMessage(contractId, inputValue)
       
-      // Simulated response for structure
       const assistantMessage = {
         role: 'assistant',
-        content: 'This is a placeholder response. API integration needed.',
+        content: response.response || response.message || 'No response received',
         timestamp: new Date(),
       }
       
       setMessages(prev => [...prev, assistantMessage])
     } catch (error) {
       console.error('Error sending message:', error)
+      const errorMessage = {
+        role: 'assistant',
+        content: 'Error: ' + (error.response?.data?.error || error.message),
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleSuggestedQuestion = (question) => {
+    setInputValue(question)
+    // Small delay to ensure state updates before sending
+    setTimeout(() => {
+      handleSendMessage()
+    }, 100)
   }
 
   const handleKeyPress = (e) => {
@@ -66,9 +84,18 @@ const ChatInterface = ({ contractId, initialMessages = [] }) => {
               Ask me anything about this contract...
             </p>
             <div className="mt-4 space-y-2">
-              <SuggestedQuestion text="What are the payment terms?" />
-              <SuggestedQuestion text="Does this contract allow early termination?" />
-              <SuggestedQuestion text="Who owns the intellectual property?" />
+              <SuggestedQuestion 
+                text="What are the payment terms?" 
+                onClick={handleSuggestedQuestion}
+              />
+              <SuggestedQuestion 
+                text="Does this contract allow early termination?" 
+                onClick={handleSuggestedQuestion}
+              />
+              <SuggestedQuestion 
+                text="Who owns the intellectual property?" 
+                onClick={handleSuggestedQuestion}
+              />
             </div>
           </div>
         ) : (
@@ -137,9 +164,12 @@ const ChatMessage = ({ message }) => {
 }
 
 // Sub-component for suggested questions
-const SuggestedQuestion = ({ text }) => {
+const SuggestedQuestion = ({ text, onClick }) => {
   return (
-    <button className="text-sm text-primary-600 hover:text-primary-700 hover:underline">
+    <button 
+      onClick={() => onClick(text)}
+      className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
+    >
       "{text}"
     </button>
   )

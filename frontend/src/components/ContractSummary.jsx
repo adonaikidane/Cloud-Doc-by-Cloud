@@ -6,6 +6,7 @@
 import React from 'react'
 import { AlertCircle, AlertTriangle, CheckCircle, Download, FileText } from 'lucide-react'
 import RiskBadge from './RiskBadge'
+import { downloadJSON } from '../utils/helpers'
 
 const ContractSummary = ({ analysis }) => {
   if (!analysis) return null
@@ -23,6 +24,20 @@ const ContractSummary = ({ analysis }) => {
     favorableTerms = [],
   } = analysis
 
+  const downloadAnalysisReport = (data) => {
+    const reportData = {
+      title: 'Contract Analysis Report',
+      generatedAt: new Date().toISOString(),
+      analysis: data,
+    }
+    
+    const filename = `contract-analysis-${Date.now()}.json`
+    downloadJSON(reportData, filename)
+    
+    // Show success message
+    alert('Report downloaded successfully!')
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
       {/* Header section */}
@@ -37,7 +52,10 @@ const ContractSummary = ({ analysis }) => {
               Analyzed in 2.3 seconds
             </p>
           </div>
-          <button className="btn-secondary flex items-center gap-2">
+          <button 
+            onClick={() => downloadAnalysisReport(analysis)}
+            className="btn-secondary flex items-center gap-2"
+          >
             <Download className="w-4 h-4" />
             Download Report
           </button>
@@ -137,7 +155,10 @@ const IssueCard = ({ issue, severity }) => {
         <div className="flex-1">
           <h5 className="font-medium text-gray-900">{title}</h5>
           {citation && (
-            <button className="text-xs text-blue-600 hover:underline mt-1">
+            <button 
+              onClick={() => alert(`Contract Section: ${citation}\n\n(Full text extraction would show here with proper implementation)`)}
+              className="text-xs text-blue-600 hover:underline mt-1"
+            >
               [{citation}] View exact text
             </button>
           )}

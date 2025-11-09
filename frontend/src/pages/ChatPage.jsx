@@ -10,72 +10,46 @@ import React, { useState } from 'react'
 import FileUpload from '../components/FileUpload'
 import ContractSummary from '../components/ContractSummary'
 import ChatInterface from '../components/ChatInterface'
+import { analyzeContract, analyzeTextContract } from '../services/api'
 
 const ChatPage = () => {
   const [currentContract, setCurrentContract] = useState(null)
   const [analysis, setAnalysis] = useState(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
-  const handleUpload = async (uploadData) => {
-    setIsAnalyzing(true)
+const handleUpload = async (uploadData) => {
+  setIsAnalyzing(true)
+  
+  try {
+    let response
     
-    try {
-      // TODO: API call to analyze contract
-      // const response = await analyzeContract(uploadData)
-      
-      // Simulated analysis for structure
-      const mockAnalysis = {
-        contractType: 'SaaS Service Agreement',
-        parties: 'YourCo ↔ AWS',
-        term: '12 months',
-        autoRenews: true,
-        value: '$50,000/year',
-        riskLevel: 'medium',
-        riskScore: 12,
-        criticalIssues: [
-          {
-            title: 'Unlimited Liability Clause',
-            description: 'Service provider accepts unlimited liability for damages.',
-            section: 'Section 8.2',
-            citation: 'Section 8.2, Page 4',
-            recommendation: 'Negotiate cap at $100K (2x annual fees)',
-          },
-          {
-            title: '90-day Auto-Renewal Notice',
-            description: 'Contract auto-renews unless cancelled 90 days before expiration.',
-            section: 'Section 12.1',
-            citation: 'Section 12.1, Page 7',
-            recommendation: 'Set reminder for August 1, 2025 or negotiate 30-day window',
-          },
-        ],
-        moderateConcerns: [
-          {
-            title: 'Payment Terms: Net 60',
-            description: 'Your standard is Net 30',
-          },
-          {
-            title: 'IP Ownership Ambiguous',
-            description: 'Work-product rights not clearly defined',
-            section: 'Section 4.3',
-          },
-        ],
-        favorableTerms: [
-          'Strong confidentiality protections',
-          'Clear performance SLAs',
-          'Reasonable indemnification terms',
-          'Standard dispute resolution process',
-        ],
-      }
-      
-      setAnalysis(mockAnalysis)
-      setCurrentContract(uploadData)
-    } catch (error) {
-      console.error('Error analyzing contract:', error)
-    } finally {
-      setIsAnalyzing(false)
+    // FileUpload sends: { type: 'file'|'text', data: ... }
+    if (uploadData.type === 'file' && uploadData.data && uploadData.data.length > 0) {
+      const formData = new FormData()
+      formData.append('contract', uploadData.data[0])  // Backend expects 'contract'
+      response = await analyzeContract(formData)
+    } else if (uploadData.type === 'text' && uploadData.data) {
+      response = await analyzeTextContract(uploadData.data)
+    } else {
+      throw new Error('No file or text provided')
     }
+    
+    if (response && response.success) {
+      setAnalysis(response.analysis)
+      setCurrentContract({
+        id: response.contractId,
+        text: uploadData.type === 'text' ? uploadData.data : uploadData.data[0].name,
+      })
+    } else {
+      throw new Error(response?.error || 'Analysis failed')
+    }
+  } catch (error) {
+    console.error('Error analyzing contract:', error)
+    alert('Error: ' + (error.response?.data?.error || error.message))
+  } finally {
+    setIsAnalyzing(false)
   }
-
+}
   return (
     <div className="h-full flex flex-col">
       {/* Upload section - shown when no contract analyzed */}

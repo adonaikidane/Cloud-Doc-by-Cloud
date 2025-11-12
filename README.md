@@ -164,10 +164,8 @@ clausecloud/
 
 ## 🤝 Team
 
-- [Your Name] - Full Stack Development
-- [Team Member 2] - AI Integration & Prompt Engineering
-- [Team Member 3] - UI/UX Design
-- [Team Member 4] - Business Logic & Testing
+- Adonai Kidane - Full Stack
+- Daniil Miscenco - Full Stack
 
 ## 📄 License
 

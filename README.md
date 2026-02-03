@@ -2,7 +2,6 @@
 
 > AI-powered contract intelligence platform that analyzes, compares, and recommends contracts in seconds
 
-[![Built with Claude](https://img.shields.io/badge/Built%20with-Claude%204-blue)](https://anthropic.com)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Hackathon](https://img.shields.io/badge/hackathon-Claude%20Builder%20Club%20x%20ACT%20Rice-purple)](https://devpost.com)
 
